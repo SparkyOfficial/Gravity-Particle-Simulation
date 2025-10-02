@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -33,9 +34,10 @@ type Game struct {
 	startTime     time.Time
 	simulationEnd time.Time
 	finished      bool
+	autoExit      bool
 }
 
-func NewGame() *Game {
+func NewGame(autoExit bool) *Game {
 	rand.Seed(time.Now().UnixNano())
 	
 	particles := make([]Particle, numParticles)
@@ -53,11 +55,15 @@ func NewGame() *Game {
 	return &Game{
 		particles: particles,
 		startTime: time.Now(),
+		autoExit:  autoExit,
 	}
 }
 
 func (g *Game) Update() error {
 	if g.finished {
+		if g.autoExit {
+			return ebiten.Termination
+		}
 		return nil
 	}
 	
@@ -151,12 +157,17 @@ func main() {
 	fmt.Println("Gravity Particle Simulation in Go")
 	fmt.Printf("Particles: %d\n", numParticles)
 	
+	autoExit := false
+	if len(os.Args) > 1 && os.Args[1] == "--auto-exit" {
+		autoExit = true
+	}
+	
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Gravity Particle Simulation")
 	
-	game := NewGame()
+	game := NewGame(autoExit)
 	
-	if err := ebiten.RunGame(game); err != nil {
+	if err := ebiten.RunGame(game); err != nil && err != ebiten.Termination {
 		panic(err)
 	}
 	

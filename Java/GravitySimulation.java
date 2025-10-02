@@ -1,8 +1,8 @@
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.swing.*;
 
 class Particle {
     double x, y;
@@ -42,6 +42,7 @@ public class GravitySimulation extends JPanel implements ActionListener {
     private int stepCount = 0;
     private long startTime;
     private boolean simulationRunning = true;
+    private static boolean autoExit = false;
     
     public GravitySimulation() {
         particles = new ArrayList<>();
@@ -83,6 +84,11 @@ public class GravitySimulation extends JPanel implements ActionListener {
             g2d.drawString("Simulation completed!", 10, 60);
             g2d.drawString(String.format("Execution time: %.4f seconds", executionTime), 10, 80);
             g2d.drawString(String.format("Average time per step: %.4f ms", (executionTime/stepCount)*1000), 10, 100);
+            
+            if (autoExit) {
+                timer.stop();
+                System.exit(0);
+            }
         }
     }
     
@@ -140,6 +146,10 @@ public class GravitySimulation extends JPanel implements ActionListener {
     }
     
     public static void main(String[] args) {
+        if (args.length > 0 && args[0].equals("--auto-exit")) {
+            autoExit = true;
+        }
+        
         JFrame frame = new JFrame("Gravity Particle Simulation");
         GravitySimulation simulation = new GravitySimulation();
         

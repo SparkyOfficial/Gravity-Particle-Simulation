@@ -39,10 +39,11 @@ struct GravitySimulation {
     start_time: Instant,
     finished: bool,
     execution_time: Option<f32>,
+    auto_exit: bool,
 }
 
 impl GravitySimulation {
-    fn new() -> Self {
+    fn new(auto_exit: bool) -> Self {
         let mut particles = Vec::with_capacity(NUM_PARTICLES);
         
         for _ in 0..NUM_PARTICLES {
@@ -60,6 +61,7 @@ impl GravitySimulation {
             start_time: Instant::now(),
             finished: false,
             execution_time: None,
+            auto_exit,
         }
     }
     
@@ -146,10 +148,13 @@ impl GravitySimulation {
 
 #[macroquad::main("Gravity Particle Simulation")]
 async fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let auto_exit = args.len() > 1 && args[1] == "--auto-exit";
+    
     println!("Gravity Particle Simulation in Rust");
     println!("Particles: {}", NUM_PARTICLES);
     
-    let mut simulation = GravitySimulation::new();
+    let mut simulation = GravitySimulation::new(auto_exit);
     
     loop {
         if is_key_down(KeyCode::Escape) {
@@ -158,6 +163,10 @@ async fn main() {
         
         simulation.update();
         simulation.draw();
+        
+        if simulation.finished && auto_exit {
+            break;
+        }
         
         next_frame().await;
         
